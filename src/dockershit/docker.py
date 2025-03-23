@@ -42,7 +42,8 @@ class Docker:
             cmd = line
 
         if cmd.startswith("#"):
-            self.dockerfile.append(cmd)
+            if not is_hidden:
+                self.dockerfile.append(cmd)
             return
 
         if self.dockerfile.is_command(cmd):

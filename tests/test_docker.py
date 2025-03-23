@@ -233,3 +233,18 @@ def test_input_hidden_command(docker_with_empty_dockerfile):
         mock_run.assert_called_once()
         assert docker_with_empty_dockerfile.dockerfile.lines == initial_lines
         assert "RUN apt-get update" not in docker_with_empty_dockerfile.dockerfile.lines
+
+
+def test_input_hidden_comment(docker_with_empty_dockerfile):
+    """Test input with a space-prefixed comment (should be ignored, not added to Dockerfile)."""
+    initial_lines = docker_with_empty_dockerfile.dockerfile.lines.copy()
+
+    # Pass a space-prefixed comment
+    docker_with_empty_dockerfile.input(" # this is for the viewers at home")
+
+    # The comment should not be added to the Dockerfile
+    assert docker_with_empty_dockerfile.dockerfile.lines == initial_lines
+    assert (
+        "# this is for the viewers at home"
+        not in docker_with_empty_dockerfile.dockerfile.lines
+    )
