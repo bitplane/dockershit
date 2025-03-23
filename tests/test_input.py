@@ -78,3 +78,28 @@ def test_keyboard_input(keyboard, mock_input):
     # Test empty inputs followed by valid input
     mock_input.side_effect = ["", "", "ENV VAR=value"]
     assert keyboard.input() == "ENV VAR=value"
+
+
+def test_input_multiline(keyboard, mock_input):
+    """Test multi-line input with backslash continuation."""
+    # Mock a multi-line input sequence
+    mock_input.side_effect = [
+        "apt-get update && \\",
+        "apt-get install -y \\",
+        "python3 curl git",
+    ]
+
+    result = keyboard.input()
+
+    # Check that all three inputs were requested
+    assert mock_input.call_count == 3
+
+    # Check that prompts were correct (first line uses #, continuations use ...)
+    assert mock_input.call_args_list[0].args == ("# ",)
+    assert mock_input.call_args_list[1].args == ("... ",)
+    assert mock_input.call_args_list[2].args == ("... ",)
+
+    # Check that the result is the combined command with backslashes removed
+    # and joined with newlines, with 4-space indentation for continuation lines
+    expected = "apt-get update &&\n    apt-get install -y\n    python3 curl git"
+    assert result == expected

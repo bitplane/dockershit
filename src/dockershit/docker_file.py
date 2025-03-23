@@ -68,6 +68,14 @@ class Dockerfile:
         self.write()
 
     def set_pwd(self, pwd):
+        # Handle relative paths
+        if not pwd.startswith("/"):
+            old_dir = self.workdir
+            if not pwd.endswith("/"):
+                old_dir = old_dir + "/"
+
+            pwd = old_dir + pwd
+
         self.workdir = pwd
         self.append(f"WORKDIR {pwd}")
 

@@ -41,6 +41,7 @@ class Docker:
         else:
             cmd = line
 
+        # Handle comments (both with and without leading space)
         if cmd.startswith("#"):
             if not is_hidden:
                 self.dockerfile.append(cmd)
@@ -54,15 +55,6 @@ class Docker:
 
         if cmd.startswith("cd "):
             new_dir = cmd[3:].strip()
-
-            # Handle relative paths
-            if not new_dir.startswith("/"):
-                old_dir = self.dockerfile.workdir
-                if not new_dir.endswith("/"):
-                    old_dir = old_dir + "/"
-
-                new_dir = old_dir + new_dir
-
             self.dockerfile.set_pwd(new_dir)
             return
 
