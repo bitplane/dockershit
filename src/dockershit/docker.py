@@ -32,17 +32,27 @@ class Docker:
     def input(self, line):
         if not line:
             return
-        if line.startswith("#"):
-            self.dockerfile.append(line)
+
+        # Add original command to history but don't save to Dockerfile if prefixed with space
+        is_hidden = line.startswith(" ")
+        if is_hidden:
+            # Strip the space for execution but don't save to Dockerfile
+            cmd = line.lstrip()
+        else:
+            cmd = line
+
+        if cmd.startswith("#"):
+            self.dockerfile.append(cmd)
             return
 
-        if self.dockerfile.is_command(line):
-            self.dockerfile.append(line)
+        if self.dockerfile.is_command(cmd):
+            if not is_hidden:
+                self.dockerfile.append(cmd)
             self.build()
             return
 
-        if line.startswith("cd "):
-            new_dir = line[3:].strip()
+        if cmd.startswith("cd "):
+            new_dir = cmd[3:].strip()
 
             # Handle relative paths
             if not new_dir.startswith("/"):
@@ -65,13 +75,14 @@ class Docker:
                 self.tag,
                 self.shell,
                 "-c",
-                line,
+                cmd,
             ]
         )
 
         if result.returncode == 0:
-            self.dockerfile.append("")
-            self.dockerfile.append(f"RUN {line}")
-            self.build()
+            if not is_hidden:
+                self.dockerfile.append("")
+                self.dockerfile.append(f"RUN {cmd}")
+                self.build()
         else:
-            self.dockerfile.append(f"# (error) RUN {line}")
+            self.dockerfile.append(f"# (error) RUN {cmd}")

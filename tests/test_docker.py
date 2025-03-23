@@ -220,3 +220,16 @@ def test_multiple_commands(docker_with_empty_dockerfile):
         assert "WORKDIR /app" in docker_with_empty_dockerfile.dockerfile.lines
         assert "# Install dependencies" in docker_with_empty_dockerfile.dockerfile.lines
         assert mock_build.call_count >= 2
+
+
+def test_input_hidden_command(docker_with_empty_dockerfile):
+    """Test input with a space-prefixed command (should run but not be saved to Dockerfile)."""
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value.returncode = 0
+
+        initial_lines = docker_with_empty_dockerfile.dockerfile.lines.copy()
+        docker_with_empty_dockerfile.input(" apt-get update")
+
+        mock_run.assert_called_once()
+        assert docker_with_empty_dockerfile.dockerfile.lines == initial_lines
+        assert "RUN apt-get update" not in docker_with_empty_dockerfile.dockerfile.lines
