@@ -17,3 +17,21 @@ ITS PRETTY EASH YOU JUST TYPE `uv run dockershit` APPARENTLY AND IT'LL WORK JUST
 LIKE THAT ONLY A BIT BUGGIER BECAUSE THE DEVELOPER WROTE IT IN LITERAL ANGER AND
 DOESN'T SEEM TO TAKE IT VERY SERIOUSLY MIGTHT BE WORTH A TRY THOUGH
 ```
+
+## Usage
+
+Quickest way is run it in `uv` (either `pip install uv` or follow
+[their instructions](https://github.com/astral-sh/uv))
+
+```bash
+uv run dockershit ubuntu:latest
+```
+
+* look in your pwd for your `Dockerfile`
+* history is in `Dockerfile.history`
+* commands starting with a space don't get added to the file, but they do go to
+  the .history file
+* if a command fails, you'll get a commented out line and you can try again
+* `cd` changes your `WORKDIR`
+* use `--debug` if you want to see it rebuilding
+* if you break your `Dockerfile` it'll exit (it rebuilds after every command)
