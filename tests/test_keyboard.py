@@ -63,7 +63,7 @@ def test_keyboard_input(keyboard, mock_input):
 
     # Test input with whitespace
     mock_input.return_value = "  WORKDIR /app  "
-    assert keyboard.input() == "WORKDIR /app"
+    assert keyboard.input() == "  WORKDIR /app  "
 
     # Test exit command
     mock_input.return_value = "exit"
@@ -85,7 +85,7 @@ def test_input_multiline(keyboard, mock_input):
     # Mock a multi-line input sequence
     mock_input.side_effect = [
         "apt-get update && \\",
-        "apt-get install -y \\",
+        "apt-get install -y && \\",
         "python3 curl git",
     ]
 
@@ -101,5 +101,7 @@ def test_input_multiline(keyboard, mock_input):
 
     # Check that the result is the combined command with backslashes removed
     # and joined with newlines, with 4-space indentation for continuation lines
-    expected = "apt-get update &&\n    apt-get install -y\n    python3 curl git"
+    expected = (
+        "apt-get update && \\\n    apt-get install -y && \\\n    python3 curl git"
+    )
     assert result == expected

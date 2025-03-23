@@ -107,5 +107,5 @@ class Dockerfile:
         Case sensitive to avoid shell mismatches
         """
         line = line.strip()
-        parts = line.split()
+        parts = line.split(maxsplit=1)
         return bool(parts and parts[0] in Dockerfile.COMMANDS)

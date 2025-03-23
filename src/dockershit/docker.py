@@ -33,31 +33,41 @@ class Docker:
         if not line:
             return
 
-        # Add original command to history but don't save to Dockerfile if prefixed with space
+        # Check if command should be hidden (starts with space)
         is_hidden = line.startswith(" ")
-        if is_hidden:
-            # Strip the space for execution but don't save to Dockerfile
-            cmd = line.lstrip()
-        else:
-            cmd = line
+        cmd = line.lstrip()
+        flat_cmd = cmd.replace("\n", " ")  # Flatten for execution
 
-        # Handle comments (both with and without leading space)
+        # Handle comments
         if cmd.startswith("#"):
             if not is_hidden:
                 self.dockerfile.append(cmd)
             return
 
+        # Handle Docker commands (COPY, ADD, etc.)
         if self.dockerfile.is_command(cmd):
             if not is_hidden:
                 self.dockerfile.append(cmd)
+
+                # If it's a WORKDIR command, update the internal workdir state
+                if cmd.startswith("WORKDIR "):
+                    # Extract the path (everything after WORKDIR)
+                    path = flat_cmd.split("WORKDIR ", 1)[1].strip()
+                    self.dockerfile.set_pwd(path)
+                    return
+
             self.build()
             return
 
-        if cmd.startswith("cd "):
+        # Handle simple cd command (without additional operators)
+        if cmd.startswith("cd ") and not any(
+            op in cmd for op in ["&&", "||", ";", "|", ">"]
+        ):
             new_dir = cmd[3:].strip()
             self.dockerfile.set_pwd(new_dir)
             return
 
+        # Execute shell command
         result = subprocess.run(
             [
                 "docker",
@@ -68,7 +78,7 @@ class Docker:
                 self.tag,
                 self.shell,
                 "-c",
-                cmd,
+                flat_cmd,
             ]
         )
 

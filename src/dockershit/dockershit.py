@@ -31,6 +31,8 @@ def run(path, image, shell, tag, debug):
     while True:
         try:
             cmd = keyboard.input()
+        except EOFError:
+            break
         except KeyboardInterrupt:
             break
 

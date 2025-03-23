@@ -143,9 +143,9 @@ def test_input_comment(docker_with_empty_dockerfile):
 def test_input_dockerfile_command(docker_with_empty_dockerfile):
     """Test input with Dockerfile command."""
     with patch.object(docker_with_empty_dockerfile, "build") as mock_build:
-        docker_with_empty_dockerfile.input("WORKDIR /usr/src/app")
+        docker_with_empty_dockerfile.input("ADD /usr/src/app")
 
-        assert "WORKDIR /usr/src/app" in docker_with_empty_dockerfile.dockerfile.lines
+        assert "ADD /usr/src/app" in docker_with_empty_dockerfile.dockerfile.lines
         mock_build.assert_called_once()
 
 
@@ -209,6 +209,7 @@ def test_multiple_commands(docker_with_empty_dockerfile):
 
         docker_with_empty_dockerfile.input("WORKDIR /app")
         docker_with_empty_dockerfile.input("# Install dependencies")
+        docker_with_empty_dockerfile.input("ADD requirements.txt /app/requirements.txt")
 
         with patch.object(
             docker_with_empty_dockerfile.dockerfile, "append"
@@ -219,7 +220,7 @@ def test_multiple_commands(docker_with_empty_dockerfile):
 
         assert "WORKDIR /app" in docker_with_empty_dockerfile.dockerfile.lines
         assert "# Install dependencies" in docker_with_empty_dockerfile.dockerfile.lines
-        assert mock_build.call_count >= 2
+        assert mock_build.call_count == 2
 
 
 def test_input_hidden_command(docker_with_empty_dockerfile):
@@ -248,3 +249,29 @@ def test_input_hidden_comment(docker_with_empty_dockerfile):
         "# this is for the viewers at home"
         not in docker_with_empty_dockerfile.dockerfile.lines
     )
+
+
+def test_input_cd_with_operators(docker_with_empty_dockerfile):
+    """Test input with cd command containing additional shell operators."""
+    # Initial state
+    docker_with_empty_dockerfile.dockerfile.workdir = "/app"
+
+    # Test cd with &&
+    docker_with_empty_dockerfile.input("cd /usr/src && ls")
+
+    # This should fail - the workdir should NOT change to "/usr/src"
+    # because the cd with && should be treated as a shell command
+    assert docker_with_empty_dockerfile.dockerfile.workdir == "/app"
+    assert "WORKDIR /usr/src" not in docker_with_empty_dockerfile.dockerfile.lines[-1]
+    assert "RUN cd /usr/src && ls" in docker_with_empty_dockerfile.dockerfile.lines
+
+
+def test_input_manual_workdir(docker_with_empty_dockerfile):
+    """Test input with manually entered WORKDIR command."""
+
+    # Enter a WORKDIR instruction
+    docker_with_empty_dockerfile.input("WORKDIR /custom/path")
+
+    # The workdir should be updated and the command added to Dockerfile
+    assert docker_with_empty_dockerfile.dockerfile.workdir == "/custom/path"
+    assert "WORKDIR /custom/path" in docker_with_empty_dockerfile.dockerfile.lines
