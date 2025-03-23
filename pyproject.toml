@@ -15,11 +15,16 @@ dev = [
     "pre-commit",
     "pytest",
     "coverage",
-    "pytest-cov"
+    "pytest-cov",
+    "twine"
 ]
 
 [project.scripts]
 dockershit = "dockershit.dockershit:main"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
 
 [build-system]
 build-backend = "flit_core.buildapi"
