@@ -32,16 +32,21 @@ class Dockerfile:
         if self.path.exists():
             raw_lines = self.path.read_text().splitlines()
             self.lines = []
-            current = ""
+            current_line = ""
+
             for line in raw_lines:
-                if current.endswith("\\"):
-                    current += "\n" + line
-                    continue
-                current = line
-                self.lines.append(line)
-            # last line is a continuation
-            if current != line:
-                self.lines.append(current)
+                if current_line and current_line.endswith("\\"):
+                    # Continue the previous line
+                    current_line = current_line + "\n" + line
+                else:
+                    # Start a new line
+                    if current_line:  # Add the previous completed line
+                        self.lines.append(current_line)
+                    current_line = line
+
+            # Don't forget the last line
+            if current_line:
+                self.lines.append(current_line)
 
         cmds = [line.split(maxsplit=1) for line in self.lines if " " in line]
         froms = [cmd[1] for cmd in cmds if cmd[0].upper() == "FROM"]
@@ -57,8 +62,10 @@ class Dockerfile:
         for i, line in enumerate(self.lines):
             if line.upper().startswith("FROM "):
                 self.lines[i] = f"FROM {image}"
+                self.write()
                 return
         self.lines.insert(0, f"FROM {image}")
+        self.write()
 
     def set_pwd(self, pwd):
         self.workdir = pwd
@@ -71,7 +78,9 @@ class Dockerfile:
     def remove_last_command(self):
         while self.lines and not self.matters(self.lines[-1]):
             self.lines.pop()
-        self.lines.pop()
+
+        if self.lines:  # Make sure we don't remove all lines
+            self.lines.pop()
 
         self.write()
 
@@ -89,5 +98,6 @@ class Dockerfile:
         """
         Case sensitive to avoid shell mismatches
         """
-        parts = line.strip().split()
+        line = line.strip()
+        parts = line.split()
         return bool(parts and parts[0] in Dockerfile.COMMANDS)
