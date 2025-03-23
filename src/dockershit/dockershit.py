@@ -18,14 +18,6 @@ DOCKER_COMMANDS = (
     "ENTRYPOINT",
 )
 
-EXCLUDES = ["Dockerfile", "Dockerfile.history"]
-
-
-def save_if_not_blank_or_space():
-    line = readline.get_line_buffer()
-    if line.strip() and not line.startswith(" "):
-        readline.add_history(line)
-
 
 def set_history_file(name: str):
     try:
@@ -33,9 +25,14 @@ def set_history_file(name: str):
     except FileNotFoundError:
         pass
 
-    readline.set_auto_history(False)
-    readline.set_pre_input_hook(save_if_not_blank_or_space)
-    atexit.register(readline.write_history_file, name)
+    def save_history():
+        try:
+            readline.write_history_file(name)
+        except Exception:
+            pass
+
+    atexit.register(save_history)
+    readline.set_auto_history(True)
 
 
 def parse_args():
@@ -68,28 +65,35 @@ def write_dockerfile(path, lines):
 
 def build_image(tag, file, debug):
     result = subprocess.run(
-        ["docker", "build", "-t", tag, "-f", str(file), "."], capture_output=not debug
+        ["docker", "build", "-t", tag, "-f", str(file), "."],
+        capture_output=not debug,
+        text=True,
     )
     if result.returncode != 0:
         if not debug:
-            sys.stderr.write(result.stderr.decode())
+            sys.stderr.write(result.stderr)
         sys.exit(result.returncode)
-    if debug:
-        sys.stdout.write(result.stdout.decode())
+    if debug and result.stdout:
+        sys.stdout.write(result.stdout)
 
 
 def is_dockerfile_cmd(cmd):
-    return any(cmd.strip().upper().startswith(dcmd) for dcmd in DOCKER_COMMANDS)
+    parts = cmd.strip().split()
+    if not parts:
+        return False
+    return parts[0] in DOCKER_COMMANDS
 
 
 def main():
     args = parse_args()
     dockerfile_path = Path(args.file)
+    history_path = dockerfile_path.with_suffix(dockerfile_path.suffix + ".history")
+
     lines = load_dockerfile(dockerfile_path)
     if not any(line.startswith("FROM") for line in lines):
         lines.insert(0, f"FROM {args.from_}")
 
-    set_history_file(f"{dockerfile_path}.history")
+    set_history_file(str(history_path))
 
     current_dir = "/"
 
@@ -98,12 +102,14 @@ def main():
         build_image(args.tag, dockerfile_path, args.debug)
 
         try:
-            cmd = input("# ").strip()
+            cmd = input("# ")
         except (EOFError, KeyboardInterrupt):
             break
 
-        if not cmd:
+        if not cmd.strip():
             continue
+
+        cmd = cmd.strip()
 
         if cmd in ("exit", "quit"):
             break
@@ -138,7 +144,6 @@ def main():
                 cmd,
             ]
         )
-        lines.append("")
 
         if cmd.startswith(" "):
             continue
