@@ -51,8 +51,8 @@ def test_is_dockerfile_cmd():
     # Valid Dockerfile commands
     for cmd in DOCKER_COMMANDS:
         assert is_dockerfile_cmd(f"{cmd} something")
-        assert is_dockerfile_cmd(f"{cmd.lower()} something")
         assert is_dockerfile_cmd(f"  {cmd} something")
+        assert not is_dockerfile_cmd(f"{cmd.lower()} something")
 
     # Not Dockerfile commands
     assert not is_dockerfile_cmd("echo hello")
