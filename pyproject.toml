@@ -1,0 +1,26 @@
+[project]
+name = "dockershit"
+description = "Interactive Dockerfile editor"
+version = "0.0.1"
+authors = [
+    { name = "Gareth Davidson", email = "gaz@bitplane.net" }
+]
+dependencies = [
+]
+
+[project.optional-dependencies]
+dev = [
+    "flake8",
+    "build",
+    "pre-commit",
+    "pytest",
+    "coverage",
+    "pytest-cov"
+]
+
+[project.scripts]
+dockershit = "dockershit.dockershit:main"
+
+[build-system]
+build-backend = "flit_core.buildapi"
+requires = ["flit_core >=3.2,<4"]
