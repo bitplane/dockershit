@@ -1,7 +1,7 @@
 [project]
 name = "dockershit"
-description = "Interactive Dockerfile editor"
-version = "0.1.0"
+description = "dockerfile shell interactive terminal"
+version = "0.1.1"
 authors = [
     { name = "Gareth Davidson", email = "gaz@bitplane.net" }
 ]

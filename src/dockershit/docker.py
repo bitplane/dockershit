@@ -103,7 +103,7 @@ class Docker:
         Check if top layer of Docker image is empty (0B)
         """
 
-        cmd = ["docker", "history", self.dockerfile.image, "--format", "json"]
+        cmd = ["docker", "history", self.tag, "--format", "json"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         line = result.stdout.strip().split("\n")[0]
         size = json.loads(line)["Size"]
