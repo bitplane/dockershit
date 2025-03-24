@@ -106,6 +106,8 @@ class Docker:
         cmd = ["docker", "history", self.tag, "--format", "json"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         line = result.stdout.strip().split("\n")[0]
-        size = json.loads(line)["Size"]
+        res = json.loads(line)
+        size = res["Size"]
+        cmd = res["CreatedBy"].split(maxsplit=1)[0].upper()
 
-        return size == "0B"
+        return size == "0B" and cmd == "RUN"
