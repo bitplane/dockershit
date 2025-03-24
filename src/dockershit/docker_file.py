@@ -93,7 +93,7 @@ class Dockerfile:
         self.lines.append(line)
         self.save()
 
-    def remove_last_command(self):
+    def remove_last_command(self, reason: str = "removed"):
         """
         Actually comment it out then reload the file
         """
@@ -102,7 +102,7 @@ class Dockerfile:
             i -= 1
             line = self.lines[i]
             if command.matters(line):
-                self.lines[i] = "# (removed) " + line
+                self.lines[i] = f"# ({reason}) " + line
                 break
 
         self.save()

@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 
@@ -22,8 +23,11 @@ class Docker:
         if result.returncode != 0:
             if not self.debug:
                 sys.stderr.write(result.stderr)
-            self.dockerfile.remove_last_command()
+            self.dockerfile.remove_last_command("error")
             return False
+
+        if self.is_top_layer_empty():
+            self.dockerfile.remove_last_command("noop")
 
         if self.debug and result.stdout:
             sys.stdout.write(result.stdout)
@@ -61,7 +65,7 @@ class Docker:
             return
 
         # Handle simple cd command (without additional operators)
-        if cmd.startswith("cd ") and not self.is_multi_command(cmd):
+        if cmd.startswith("cd ") and command.is_simple(cmd):
             new_dir = cmd[3:].strip()
             self.dockerfile.cd(new_dir)
             return
@@ -94,9 +98,14 @@ class Docker:
             ]
         )
 
-    @staticmethod
-    def is_multi_command(cmd):
+    def is_top_layer_empty(self):
         """
-        Check if the command is a special command
+        Check if top layer of Docker image is empty (0B)
         """
-        return any(token in cmd for token in ["&&", "||", ";", "|", ">", "<"])
+
+        cmd = ["docker", "history", self.dockerfile.image, "--format", "json"]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        line = result.stdout.strip().split("\n")[0]
+        size = json.loads(line)["Size"]
+
+        return size == "0B"
