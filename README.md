@@ -27,8 +27,9 @@ Quickest way is run it in `uv` (either `pip install uv` or follow
 
 ### ⚠️ IT EDITS DOCKERFILES SO USE SOURCE CONTROL ⚠️
 
-By default it'll create or append to a `Dockerfile` in your pwd. And it might
-also delete stuff or comment it all out. Don't say you weren't warned.
+By default it'll create or append to a `Dockerfile` in your pwd. Earlier
+versions also delete stuff, current ones might comment things out. Don't say
+you weren't warned.
 
 ```bash
 uvx dockershit ubuntu:latest
@@ -37,12 +38,12 @@ uvx dockershit ubuntu:latest
 * type some commands, then `exit` or `quit`
 * look in your pwd for a `Dockerfile`, notice the `RUN` lines - they're the
   commands that worked (zero exit code)
-* commands that failed are commented out
+* commands that failed or made no changes are commented out
 * arrow keys and ctrl+r work, history is in `Dockerfile.history`
 * commands starting with a space don't get added to the file, but they do go to
   the .history file
-* comments like `# wtf delete the above` go to the `Dockerfile` unless they start
-  with a space
+* comments e.g. `# wtf delete the above` go to the `Dockerfile` unless they
+  start with a space i.e. ` # subscribe and like, like and subscribe`
 * `ADD`, `COPY` and other docker shit get added too, and the image is rebuilt
   between each command
 * if a command fails, you'll get a commented out line instead
