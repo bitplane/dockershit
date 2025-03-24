@@ -129,6 +129,16 @@ def test_cd(empty_dockerfile):
     assert "WORKDIR /usr/src/app" in empty_dockerfile.path.read_text()
 
 
+def test_cd_incremental(empty_dockerfile):
+    """Test setting the working directory."""
+    empty_dockerfile.cd("/")
+    empty_dockerfile.cd("etc")
+
+    assert empty_dockerfile.workdir == "/etc"
+    assert "WORKDIR /etc" in empty_dockerfile.lines
+    assert "WORKDIR /etc" in empty_dockerfile.path.read_text()
+
+
 def test_append(empty_dockerfile):
     """Test appending a line."""
     empty_dockerfile.append("RUN apt-get update")

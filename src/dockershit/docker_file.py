@@ -81,7 +81,7 @@ class Dockerfile:
         # Handle relative paths
         if not pwd.startswith("/"):
             old_dir = self.workdir
-            if not pwd.endswith("/"):
+            if not old_dir.endswith("/"):
                 old_dir = old_dir + "/"
 
             pwd = old_dir + pwd
