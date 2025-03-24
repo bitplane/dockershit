@@ -6,7 +6,7 @@ source .venv/bin/activate
 set -e
 
 # install our package
-python3 -m pip install .
+uv pip install .
 
 # let make know that we are installed in user mode
 echo Installed normally
