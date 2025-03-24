@@ -1,6 +1,7 @@
 import subprocess
 import sys
 
+from . import command
 from .docker_file import Dockerfile
 
 
@@ -34,9 +35,9 @@ class Docker:
             return
 
         # Check if command should be hidden (starts with space)
-        is_hidden = line.startswith(" ")
+        is_hidden = command.is_hidden(line)
         cmd = line.lstrip()
-        flat_cmd = cmd.replace("\n", " ")  # Flatten for execution
+        flat_cmd = command.flatten(line)
 
         # Handle comments
         if cmd.startswith("#"):
@@ -45,7 +46,7 @@ class Docker:
             return
 
         # Handle Docker commands (COPY, ADD, etc.)
-        if self.dockerfile.is_command(cmd):
+        if command.is_dockerfile(cmd):
             if not is_hidden:
                 self.dockerfile.append(cmd)
 
@@ -53,22 +54,33 @@ class Docker:
                 if cmd.startswith("WORKDIR "):
                     # Extract the path (everything after WORKDIR)
                     path = flat_cmd.split("WORKDIR ", 1)[1].strip()
-                    self.dockerfile.set_pwd(path)
+                    self.dockerfile.cd(path)
                     return
 
             self.build()
             return
 
         # Handle simple cd command (without additional operators)
-        if cmd.startswith("cd ") and not any(
-            op in cmd for op in ["&&", "||", ";", "|", ">"]
-        ):
+        if cmd.startswith("cd ") and not self.is_multi_command(cmd):
             new_dir = cmd[3:].strip()
-            self.dockerfile.set_pwd(new_dir)
+            self.dockerfile.cd(new_dir)
             return
 
-        # Execute shell command
-        result = subprocess.run(
+        result = self.run(cmd)
+
+        if result.returncode == 0:
+            if not is_hidden:
+                self.dockerfile.append("")
+                self.dockerfile.append(f"RUN {cmd}")
+                self.build()
+        else:
+            self.dockerfile.append(f"# (error) RUN {cmd}")
+
+    def run(self, cmd):
+        """
+        Run a command in the Docker container
+        """
+        return subprocess.run(
             [
                 "docker",
                 "run",
@@ -78,14 +90,13 @@ class Docker:
                 self.tag,
                 self.shell,
                 "-c",
-                flat_cmd,
+                cmd,
             ]
         )
 
-        if result.returncode == 0:
-            if not is_hidden:
-                self.dockerfile.append("")
-                self.dockerfile.append(f"RUN {cmd}")
-                self.build()
-        else:
-            self.dockerfile.append(f"# (error) RUN {cmd}")
+    @staticmethod
+    def is_multi_command(cmd):
+        """
+        Check if the command is a special command
+        """
+        return any(token in cmd for token in ["&&", "||", ";", "|", ">", "<"])

@@ -17,7 +17,7 @@ class Keyboard:
 
     def input(self):
         """
-        Get input from the user, supporting multi-line input with backslash continuation.
+        Get input from the user, with multi-line continuation via backslash.
         """
         lines = []
 

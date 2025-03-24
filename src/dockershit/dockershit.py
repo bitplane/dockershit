@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import sys
 
@@ -6,7 +7,10 @@ from .docker_file import Dockerfile
 from .keyboard import Keyboard
 
 
-def parse_args(argv=sys.argv[1:]):
+def parse_args(argv: list[str] = sys.argv[1:]):
+    """
+    Nobody likes an argument, but sometimes you just have to parse them.
+    """
     parser = argparse.ArgumentParser(description="docker sh --it")
     parser.add_argument(
         "image", nargs="?", default=None, metavar="image", help="Base image to use"
@@ -20,7 +24,10 @@ def parse_args(argv=sys.argv[1:]):
     return parser.parse_args(argv)
 
 
-def run(path, image, shell, tag, debug):
+def run(path: str, image: str, shell: str, tag: str, debug: bool):
+    """
+    The input loop.
+    """
     dockerfile = Dockerfile(path, image=image)
     docker = Docker(dockerfile, shell, tag, debug=debug)  # Pass debug here
     docker.build()  # No arguments here
@@ -31,15 +38,18 @@ def run(path, image, shell, tag, debug):
     while True:
         try:
             cmd = keyboard.input()
-        except EOFError:
+        except EOFError:  # for electric rocks
             break
-        except KeyboardInterrupt:
+        except KeyboardInterrupt:  # for bags of water
             break
 
         docker.input(cmd)
 
 
-def main(argv=sys.argv[1:]):
+def main(argv: str = sys.argv[1:]):
+    """
+    The main course.
+    """
     args = parse_args(argv)
     run(
         path=args.file,
@@ -50,5 +60,6 @@ def main(argv=sys.argv[1:]):
     )
 
 
+# we should look at these and weep
 if __name__ == "__main__":
     main()
