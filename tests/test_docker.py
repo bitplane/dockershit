@@ -41,14 +41,16 @@ def complex_dockerfile(tmp_dockerfile_path):
 @pytest.fixture
 def docker_safe():
     with patch("subprocess.run") as mock_run:
+        mock_run.return_value.returncode = 0
         yield mock_run
 
 
 @pytest.fixture
-def docker_mock():
-    with patch("dockershit.docker.Docker.is_top_layer_empty") as mock_empty:
-        mock_empty.return_value = False
-        yield mock_empty
+def docker_mock(docker_safe):
+    with docker_safe:
+        with patch("dockershit.docker.Docker.is_top_layer_empty") as mock_empty:
+            mock_empty.return_value = False
+            yield mock_empty
 
 
 @pytest.fixture
@@ -74,25 +76,29 @@ def docker_fails(docker_mock):
 @pytest.fixture
 def docker_with_no_file(empty_dockerfile, docker_mock):
     """Create a Docker instance with an empty Dockerfile."""
-    return Docker(empty_dockerfile, "/bin/sh", "test-tag", debug=False)
+    with docker_mock:
+        yield Docker(empty_dockerfile, "/bin/sh", "test-tag", debug=False)
 
 
 @pytest.fixture
 def docker_with_simple_dockerfile(simple_dockerfile, docker_mock):
     """Create a Docker instance with a simple Dockerfile."""
-    return Docker(simple_dockerfile, "/bin/sh", "test-tag", debug=False)
+    with docker_mock:
+        yield Docker(simple_dockerfile, "/bin/sh", "test-tag", debug=False)
 
 
 @pytest.fixture
 def docker_with_complex_dockerfile(complex_dockerfile, docker_mock):
     """Create a Docker instance with a complex Dockerfile."""
-    return Docker(complex_dockerfile, "/bin/sh", "test-tag", debug=False)
+    with docker_mock:
+        yield Docker(complex_dockerfile, "/bin/sh", "test-tag", debug=False)
 
 
 @pytest.fixture
 def docker_debug_mode(empty_dockerfile, docker_mock):
     """Create a Docker instance in debug mode."""
-    return Docker(empty_dockerfile, "/bin/sh", "test-tag", debug=True)
+    with docker_mock:
+        return Docker(empty_dockerfile, "/bin/sh", "test-tag", debug=True)
 
 
 def test_build_success(docker_with_no_file, docker_success):
