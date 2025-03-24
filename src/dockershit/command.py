@@ -24,7 +24,7 @@ def split_command(line: str) -> str:
     """
     line = line.strip()
     split = line.split(maxsplit=1)
-    return split + [""] * (len(split) - 2)
+    return split + [""] * (2 - len(split))
 
 
 def is_dockerfile(line: str) -> bool:
