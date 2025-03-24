@@ -13,25 +13,44 @@ AND copy AND STUFF THEN WHEN YOU'VE ACTUALLY GOT SOMETHING THAT WORKS YOU CAN GO
 AND EDIT IT INTO SOMETHING THAT LOOKS MORE LIKE AN ACTUAL dOCKERFILE RATHER THAN
 TRYING TO DO EVERYTHING UP-FRONT BEFORE YOU EVEN KNOW IF IT'S GONNA WORK INSTEAD
 OF COMMUNICATING BY TELEGRAM MAYBE I SHOULD INSTALL DOCKERSHIT AND USE THAT YEAH
-ITS PRETTY EASH YOU JUST TYPE `uv run dockershit` APPARENTLY AND IT'LL WORK JUST
-LIKE THAT ONLY A BIT BUGGIER BECAUSE THE DEVELOPER WROTE IT IN LITERAL ANGER AND
-DOESN'T SEEM TO TAKE IT VERY SERIOUSLY MIGTHT BE WORTH A TRY THOUGH
+ITS PRETTY EASH YOU JUST TYPE `uvx dockershit` APPARENTLY AND IT'LL BE READY FOR
+USE IN UNDER A SECOND AND WILL MOSTLY WORK BUT MIGHT BE BUGGY BECAUSE ITS NEWISH
+AND THE DEVELOPER WROTE IT IN ANGER AND DOESN'T SEEM TO TAKE IT SERIOUSLY BUT IT
+IS WORTH A TRY BECAUSE IF YOU WASTE TIME HERE AT LEAST IT IS WASTED DIFFERENTLY.
 ```
 
 ## Usage
 
 Quickest way is run it in `uv` (either `pip install uv` or follow
-[their instructions](https://github.com/astral-sh/uv))
+[their instructions](https://github.com/astral-sh/uv)). Or use
+`pip install dockershit` or `pipx dockershit`. It's on pypi.
+
+### ⚠️ IT EDITS DOCKERFILES SO USE SOURCE CONTROL ⚠️
+
+By default it'll create or append to a `Dockerfile` in your pwd. And it might
+also delete stuff or comment it all out. Don't say you weren't warned.
 
 ```bash
-uv run dockershit ubuntu:latest
+uvx dockershit ubuntu:latest
 ```
 
-* look in your pwd for your `Dockerfile`
-* history is in `Dockerfile.history`
+* type some commands, then `exit` or `quit`
+* look in your pwd for a `Dockerfile`, notice the `RUN` lines - they're the
+  commands that worked (zero exit code)
+* commands that failed are commented out
+* arrow keys and ctrl+r work, history is in `Dockerfile.history`
 * commands starting with a space don't get added to the file, but they do go to
   the .history file
-* if a command fails, you'll get a commented out line and you can try again
-* `cd` changes your `WORKDIR`
+* comments like `# wtf delete the above` go to the `Dockerfile` unless they start
+  with a space
+* `ADD`, `COPY` and other docker shit get added too, and the image is rebuilt
+  between each command
+* if a command fails, you'll get a commented out line instead
+* `cd` changes your `WORKDIR`, and `WORKDIR` changes your `cd`
 * use `--debug` if you want to see it rebuilding
 * if you break your `Dockerfile` it'll exit (it rebuilds after every command)
+  and currently deletes the broken line
+* your Dockerfile and its history are excluded from the context
+* you can use it with pipe like `cat whatever | dockershit`
+* yeah it runs everything twice, which is an embarrassment - in future I'll make
+  it just run in docker, but pull requests are welcome
