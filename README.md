@@ -35,23 +35,35 @@ you weren't warned.
 uvx dockershit ubuntu:latest
 ```
 
-* type some commands, then `exit` or `quit`
-* look in your pwd for a `Dockerfile`, notice the `RUN` lines - they're the
+* 🔢 type some commands, then `exit` or `quit`
+* 👀 look in your pwd for a `Dockerfile`, notice the `RUN` lines - they're the
   commands that worked (zero exit code)
-* commands that failed or made no changes are commented out
-* arrow keys and ctrl+r work, history is in `Dockerfile.history`
-* commands starting with a space don't get added to the file, but they do go to
+* 💣 commands that failed or made no changes are commented out
+* 🔃 arrow keys and ctrl+r work, history is in `Dockerfile.history`
+* ⬅️ commands starting with a space don't get added to the file, but they do go to
   the .history file
-* comments e.g. `# wtf delete the above` go to the `Dockerfile` unless they
+* #️⃣ comments e.g. `# wtf delete the above` go to the `Dockerfile` unless they
   start with a space i.e. ` # subscribe and like, like and subscribe`
-* `ADD`, `COPY` and other docker shit get added too, and the image is rebuilt
+* ➕ `ADD`, `COPY` and other docker shit get added too, and the image is rebuilt
   between each command
-* if a command fails, you'll get a commented out line instead
-* `cd` changes your `WORKDIR`, and `WORKDIR` changes your `cd`
-* use `--debug` if you want to see it rebuilding
-* if you break your `Dockerfile` it'll exit (it rebuilds after every command)
+* #️⃣ if a command fails, you'll get a commented out line instead
+* 🚶 `cd` changes your `WORKDIR`, and `WORKDIR` changes your `cd`
+* 🐛 use `--debug` if you want to see it rebuilding
+* ⛓️‍💥 if you break your `Dockerfile` it'll exit (it rebuilds after every command)
   and currently deletes the broken line
-* your Dockerfile and its history are excluded from the context
-* you can use it with pipe like `cat whatever | dockershit`
-* yeah it runs everything twice, which is an embarrassment - in future I'll make
+* 🚫 your Dockerfile and its history are excluded from the context
+* 🪈 you can use it with pipe like `cat whatever | dockershit`
+* 💩 yeah it runs everything twice, which is an embarrassment - in future I'll make
   it just run in docker, but pull requests are welcome
+
+# License
+
+WTFPL with one additional clause:
+
+1. Don't blame me!
+
+# Links
+
+* [🏠 home](https://bitpane.net/dev/python/dockershit)
+* [🐍 pypi](https://pypi.org/project/dockershit)
+* [🐱 github](https://github.com/bitplane/dockershit)
