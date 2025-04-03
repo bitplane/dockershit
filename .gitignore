@@ -6,3 +6,4 @@ htmlcov
 Dockerfile*
 *.lock
 *.history
+docs/pydoc

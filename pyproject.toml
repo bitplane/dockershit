@@ -30,7 +30,8 @@ dev = [
     "pytest",
     "coverage",
     "pytest-cov",
-    "twine"
+    "twine",
+    "pydoc-markdown"
 ]
 
 [project.scripts]
